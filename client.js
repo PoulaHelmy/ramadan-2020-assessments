@@ -1,8 +1,9 @@
 const listOfVidsElm = document.getElementById("listOfRequests");
-const SUPER_USER_ID = "5f5b7dc4c234ee12c849ede6";
+const SUPER_USER_ID = "15091997";
 const state = {
   sortBy: "newFirst",
   searchTerm: "",
+  filterBy: "all",
   userId: "",
   isSuperUser: false,
 };
@@ -50,6 +51,16 @@ function renderGetSingleVidReq(vidInfo, isPrePend = false) {
                     }
                 </p>
                 </div>
+                ${
+                  vidInfo.status === "done"
+                    ? `
+                  <div class="ml-auto mr-3 " >
+                <iframe width="240" height="135" src="https://www.youtube.com/embed/${vidInfo.video_ref.link}" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                </div>
+                  `
+                    : ""
+                }
+                
                 <div class="d-flex flex-column text-center">
                 <a id="votes_ups_${vidInfo._id}" class="btn btn-link">🔺</a>
                 <h3 id="score_votes_${vidInfo._id}">
@@ -58,9 +69,19 @@ function renderGetSingleVidReq(vidInfo, isPrePend = false) {
                 </div>
             </div>
             <div class="card-footer d-flex flex-row justify-content-between">
-                <div>
-                <span class="text-info">${vidInfo.status.toUpperCase()}</span>
-                &bul; added by <strong>${vidInfo.author_name}</strong> on
+                <div class="${
+                  vidInfo.status === "done"
+                    ? "text-success"
+                    : vidInfo.status === "planned"
+                    ? "text-primary"
+                    : ""
+                }">
+                <span class="">${vidInfo.status.toUpperCase()} ${
+    vidInfo.status === "done"
+      ? ` on ${new Date(vidInfo.video_ref.date).toLocaleDateString()} `
+      : ""
+  }</span>
+                &bullet; added by <strong>${vidInfo.author_name}</strong> on
                 <strong>${new Date(
                   vidInfo.submit_date
                 ).toLocaleDateString()}</strong>
@@ -134,14 +155,15 @@ function renderGetSingleVidReq(vidInfo, isPrePend = false) {
         .then(() => window.location.reload());
     }); //End ofDelete Buuton
   }
-  applyVoteStyle(vidInfo._id, vidInfo.votes);
+  console.log();
+  applyVoteStyle(vidInfo._id, vidInfo.votes, vidInfo.status === "done");
 
   const scoreVotesElm = document.getElementById(`score_votes_${vidInfo._id}`);
   const votesElms = document.querySelectorAll(
     `[id^=votes_][id$=_${vidInfo._id}]`
   );
   votesElms.forEach((elm) => {
-    if (state.isSuperUser) {
+    if (state.isSuperUser || vidInfo.status === "done") {
       return;
     }
     elm.addEventListener("click", function (e) {
@@ -158,20 +180,19 @@ function renderGetSingleVidReq(vidInfo, isPrePend = false) {
         .then((data) => {
           scoreVotesElm.innerText =
             data.votes.ups.length - data.votes.downs.length;
-          applyVoteStyle(id, data.votes, vote_type);
+          applyVoteStyle(id, data.votes, vidInfo.status === "done", vote_type);
         });
     });
   });
 } //end of getSingleVidReq
-function applyVoteStyle(video_id, votes_list, vote_type) {
+function applyVoteStyle(video_id, votes_list, isDisabled = false, vote_type) {
   const voteDownsElm = document.getElementById(`votes_downs_${video_id}`);
   const voteUpsElm = document.getElementById(`votes_ups_${video_id}`);
-  if (state.isSuperUser) {
+  if (isDisabled) {
     voteDownsElm.style.opacity = "0.5";
     voteDownsElm.style.cursor = "not-allowed";
     voteUpsElm.style.opacity = "0.5";
     voteUpsElm.style.cursor = "not-allowed";
-
     return;
   }
   if (!vote_type) {
@@ -192,9 +213,13 @@ function applyVoteStyle(video_id, votes_list, vote_type) {
     voteOtherDirElm.style.opacity = 1;
   }
 } //end of applyVoteStyle
-function loadAllVidReqs(sortBy = "newFirst", searchTerm = "") {
+function loadAllVidReqs(
+  sortBy = "newFirst",
+  searchTerm = "",
+  filterBy = "all"
+) {
   fetch(
-    `http://localhost:7777/video-request?sortBy=${sortBy}&searchTerm=${searchTerm}`
+    `http://localhost:7777/video-request?sortBy=${sortBy}&searchTerm=${searchTerm}&filterBy=${filterBy}`
   )
     .then((blobb) => blobb.json())
     .then((data) => {
@@ -257,6 +282,7 @@ function updateVideoStatus(videoId, newStatus, videoResValue = "") {
 document.addEventListener("DOMContentLoaded", function () {
   const formVidReqElm = document.getElementById("formVedioRequest");
   const sortByElms = document.querySelectorAll("[id*=sort_by_]");
+  const filterBtElms = document.querySelectorAll("[id^=filter_by_]");
   const searchBox = document.getElementById("searchBox");
   const formLoginElm = document.querySelector(".login-form");
   const appContentElm = document.querySelector(".app-content");
@@ -271,12 +297,22 @@ document.addEventListener("DOMContentLoaded", function () {
     appContentElm.classList.remove("d-none");
   }
   loadAllVidReqs();
+  //-------------------- Filter
+  filterBtElms.forEach((elm) => {
+    elm.addEventListener("click", function (e) {
+      e.preventDefault();
+      state.filterBy = e.target.getAttribute("id").split("_")[2];
+      loadAllVidReqs(state.sortBy, state.searchTerm, state.filterBy);
+      filterBtElms.forEach((elm) => elm.classList.remove("active"));
+      this.classList.add("active");
+    });
+  }); //end of Filter
   //-------------------- SORT
   sortByElms.forEach((elm) => {
     elm.addEventListener("click", function (e) {
       e.preventDefault();
       state.sortBy = this.querySelector("input").value;
-      loadAllVidReqs(state.sortBy, state.searchTerm);
+      loadAllVidReqs(state.sortBy, state.searchTerm, state.filterBy);
       this.classList.add("active");
       if (state.sortBy === "topVotedFirst") {
         document.getElementById("sort_by_new").classList.remove("active");
@@ -290,7 +326,7 @@ document.addEventListener("DOMContentLoaded", function () {
     "input",
     debounce((e) => {
       state.searchTerm = e.target.value;
-      loadAllVidReqs(state.sortBy, state.searchTerm);
+      loadAllVidReqs(state.sortBy, state.searchTerm, state.filterBy);
     }, 300)
   ); //end of search box
   // --------------------- Form
