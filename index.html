@@ -11,6 +11,7 @@
   </head>
   <body>
     <div class="container my-5">
+      <!-- USER LOGIN -->
       <div class="login-form col-md-4 offset-md-4 pt-4">
       <form action="http://localhost:7777/users/login" method="POST">
         <div class="row">
@@ -45,90 +46,98 @@
         </div>
       </form>
       </div>
+      <!-- END  USER LOGIN -->
+      <!-- APP CONTENT -->
       <div class="app-content d-none">
-      
-      <div class="formContainer my-5">
-        <form id="formVedioRequest" novalidate>
+        <!-- Normal USER CONTENT -->
+        <div class="normal-user-content">
+          <div class="formContainer my-5">
+            <form id="formVedioRequest" novalidate>
+              <div class="row">
+                <div class="col-md">
+                  <div class="form-group">
+                    <label for="topic_title">Topic *</label>
+                    <input
+                      class="form-control"
+                      name="topic_title"
+                      placeholder="Write your suggested topic here"
+                      type="text"
+                      required
+                      />
+                      <p class="invalid-feedback">This Feild is Required & should be less 30 characters</p>
+  
+                  </div>
+                </div>
+                <div class="col-md">
+                  <div class="form-group">
+                    <label for="target_level">Target level</label>
+                    <select
+                      class="form-control"
+                      name="target_level"
+                      placeholder="Write your name here"
+                    >
+                      <option value="begineer">Beginner</option>
+                      <option value="medium">Medium</option>
+                      <option value="advanced">Advanced</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-md">
+                  <div class="form-group">
+                    <label for="topic_details">More details *</label>
+                    <textarea
+                      class="form-control"
+                      name="topic_details"
+                      placeholder="Write your topic in more details here"
+                      required
+                      ></textarea>
+                      <p class="invalid-feedback">This Feild is Required</p>
+  
+                  </div>
+                </div>
+                <div class="col-md">
+                  <div class="form-group">
+                    <label for="expected_result">Expected results</label>
+                    <textarea
+                      class="form-control"
+                      name="expected_result"
+                      placeholder="Write what do you expect after watching this video"
+                    ></textarea>
+                  </div>
+                </div>
+              </div>
+  
+              <button type="submit" class="btn btn-success mt-3">
+                Send video request
+              </button>
+            </form>
+          </div>
           <hr />
-          <div class="row">
-            <div class="col-md">
-              <div class="form-group">
-                <label for="topic_title">Topic *</label>
-                <input
-                  class="form-control"
-                  name="topic_title"
-                  placeholder="Write your suggested topic here"
-                  type="text"
-                  required
-                  />
-                  <p class="invalid-feedback">This Feild is Required & should be less 30 characters</p>
-
-              </div>
-            </div>
-            <div class="col-md">
-              <div class="form-group">
-                <label for="target_level">Target level</label>
-                <select
-                  class="form-control"
-                  name="target_level"
-                  placeholder="Write your name here"
-                >
-                  <option value="begineer">Beginner</option>
-                  <option value="medium">Medium</option>
-                  <option value="advanced">Advanced</option>
-                </select>
-              </div>
-            </div>
+          <h1 class="mb-4" >List of requested videos</h1>
+          <div class="d-flex justify-content-between mb-4">
+            <div class="btn-group btn-group-toggle" data-toggle="buttons">
+              <label class="btn btn-primary " id="sort_by_new">
+                <input  type="radio" name="options" value="newFirst">New First
+              </label>
+              <label class="btn btn-primary " id="sort_by_top">
+                <input  type="radio" name="options" value="topVotedFirst">Top Voted
+              </label>
+            </button>
           </div>
-          <div class="row">
-            <div class="col-md">
-              <div class="form-group">
-                <label for="topic_details">More details *</label>
-                <textarea
-                  class="form-control"
-                  name="topic_details"
-                  placeholder="Write your topic in more details here"
-                  required
-                  ></textarea>
-                  <p class="invalid-feedback">This Feild is Required</p>
-
-              </div>
-            </div>
-            <div class="col-md">
-              <div class="form-group">
-                <label for="expected_result">Expected results</label>
-                <textarea
-                  class="form-control"
-                  name="expected_result"
-                  placeholder="Write what do you expect after watching this video"
-                ></textarea>
-              </div>
-            </div>
+          <div>
+            <input type="search" class="form-control" placeholder="Search....." id="searchBox">
           </div>
-
-          <button type="submit" class="btn btn-success mt-3">
-            Send video request
-          </button>
-        </form>
-      </div>
-      <hr />
-      <h1 class="mb-4" >List of requested videos</h1>
-      <div class="d-flex justify-content-between mb-4">
-        <div class="btn-group btn-group-toggle" data-toggle="buttons">
-          <label class="btn btn-primary " id="sort_by_new">
-            <input  type="radio" name="options" value="newFirst">New First
-          </label>
-          <label class="btn btn-primary " id="sort_by_top">
-            <input  type="radio" name="options" value="topVotedFirst">Top Voted
-          </label>
-        </button>
-      </div>
-      <div>
-        <input type="search" class="form-control" placeholder="Search....." id="searchBox">
-      </div>
-      </div>
-      <div id="listOfRequests"></div>
+          </div>
+        </div>
+        <!-- END Normal USER CONTENT -->
+        <!-- List OF CONTENT -->
+        <div id="listOfRequests"></div>
        </div>
+       <!-- ENd List OF CONTENT -->
+      
+      <!-- END APP CONTENT -->
     </div>
     <script src="./client.js"></script>
   </body>
