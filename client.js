@@ -22,7 +22,7 @@ function renderGetSingleVidReq(vidInfo, isPrePend = false) {
                 <div class="d-flex flex-column text-center">
                 <a id="votes_ups_${vidInfo._id}" class="btn btn-link">🔺</a>
                 <h3 id="score_votes_${vidInfo._id}">
-                ${vidInfo.votes.ups - vidInfo.votes.downs}</h3>
+                ${vidInfo.votes.ups.length - vidInfo.votes.downs.length}</h3>
                 <a id="votes_downs_${vidInfo._id}" class="btn btn-link">🔻</a>
                 </div>
             </div>
@@ -48,45 +48,53 @@ function renderGetSingleVidReq(vidInfo, isPrePend = false) {
   isPrePend
     ? listOfVidsElm.prepend(vidReqContainerElm)
     : listOfVidsElm.appendChild(vidReqContainerElm);
-  const voteDownsElm = document.getElementById(`votes_downs_${vidInfo._id}`);
+  applyVoteStyle(vidInfo._id, vidInfo.votes);
+
   const scoreVotesElm = document.getElementById(`score_votes_${vidInfo._id}`);
-  const voteUpsElm = document.getElementById(`votes_ups_${vidInfo._id}`);
-
-  voteUpsElm.addEventListener("click", (e) => {
-    fetch("http://localhost:7777/video-request/vote", {
-      method: "PUT",
-      headers: {
-        "content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        id: vidInfo._id,
-        vote_type: "ups",
-      }),
-    })
-      .then((blob2) => blob2.json())
-      .then((data) => {
-        scoreVotesElm.innerText = data.votes.ups - data.votes.downs;
-      });
-  }); //end of votes up click
-
-  voteDownsElm.addEventListener("click", (e) => {
-    fetch("http://localhost:7777/video-request/vote", {
-      method: "PUT",
-      headers: {
-        "content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        id: vidInfo._id,
-        vote_type: "downs",
-      }),
-    })
-      .then((blob22) => blob22.json())
-      .then((data) => {
-        scoreVotesElm.innerText = data.votes.ups - data.votes.downs;
-      });
-  }); //end of votes Down click
+  const votesElms = document.querySelectorAll(
+    `[id^=votes_][id$=_${vidInfo._id}]`
+  );
+  votesElms.forEach((elm) => {
+    elm.addEventListener("click", function (e) {
+      e.preventDefault();
+      const [, vote_type, id] = e.target.getAttribute("id").split("_");
+      fetch("http://localhost:7777/video-request/vote", {
+        method: "PUT",
+        headers: {
+          "content-Type": "application/json",
+        },
+        body: JSON.stringify({ id, vote_type, user_id: state.userId }),
+      })
+        .then((blob2) => blob2.json())
+        .then((data) => {
+          scoreVotesElm.innerText =
+            data.votes.ups.length - data.votes.downs.length;
+          applyVoteStyle(id, data.votes, vote_type);
+        });
+    });
+  });
 } //end of getSingleVidReq
-
+function applyVoteStyle(video_id, votes_list, vote_type) {
+  if (!vote_type) {
+    if (votes_list.ups.includes(state.userId)) {
+      vote_type = "ups";
+    } else if (votes_list.downs.includes(state.userId)) {
+      vote_type = "downs";
+    } else {
+      return;
+    }
+  }
+  const voteDownsElm = document.getElementById(`votes_downs_${video_id}`);
+  const voteUpsElm = document.getElementById(`votes_ups_${video_id}`);
+  const voteDirElm = vote_type === "ups" ? voteUpsElm : voteDownsElm;
+  const voteOtherDirElm = vote_type === "ups" ? voteDownsElm : voteUpsElm;
+  if (votes_list[vote_type].includes(state.userId)) {
+    voteDirElm.style.opacity = 1;
+    voteOtherDirElm.style.opacity = "0.5";
+  } else {
+    voteOtherDirElm.style.opacity = 1;
+  }
+}
 function loadAllVidReqs(sortBy = "newFirst", searchTerm = "") {
   fetch(
     `http://localhost:7777/video-request?sortBy=${sortBy}&searchTerm=${searchTerm}`
@@ -150,6 +158,7 @@ document.addEventListener("DOMContentLoaded", function () {
     appContentElm.classList.remove("d-none");
   }
   loadAllVidReqs();
+  //-------------------- SORT
   sortByElms.forEach((elm) => {
     elm.addEventListener("click", function (e) {
       e.preventDefault();
@@ -163,6 +172,7 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     });
   }); //end of sort
+  // ------------------- Search
   searchBox.addEventListener(
     "input",
     debounce((e) => {
@@ -170,6 +180,7 @@ document.addEventListener("DOMContentLoaded", function () {
       loadAllVidReqs(state.sortBy, state.searchTerm);
     }, 300)
   ); //end of search box
+  // --------------------- Form
   formVidReqElm.addEventListener("submit", (e) => {
     e.preventDefault();
     const formData = new FormData(formVidReqElm);
