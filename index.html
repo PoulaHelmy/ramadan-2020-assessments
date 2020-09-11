@@ -11,37 +11,44 @@
   </head>
   <body>
     <div class="container my-5">
-      <div class="formContainer my-5">
-        <form id="formVedioRequest" novalidate>
-          <div class="row">
-            <div class="col-md">
-              <div class="form-group">
-                <label for="author_name">Your name *</label>
-                <input
-                  class="form-control"
-                  name="author_name"
-                  placeholder="Write your name here"
-                  type="text"
-                  required
-                />
-                <p class="invalid-feedback">This Feild is Required</p>
-              </div>
+      <div class="login-form col-md-4 offset-md-4 pt-4">
+      <form action="http://localhost:7777/users/login" method="POST">
+        <div class="row">
+          <div class="col-md">
+            <div class="form-group">
+              <label for="author_name">Your name *</label>
+              <input
+                class="form-control"
+                name="author_name"
+                placeholder="Write your name here"
+                type="text"
+                required
+              />
+              <p class="invalid-feedback">This Feild is Required</p>
             </div>
-            <div class="col-md">
-              <div class="form-group">
-                <label for="author_email">Your email *</label>
-                <input
-                  class="form-control"
-                  name="author_email"
-                  placeholder="Write your email here"
-                  type="email"
-                  required
-                />
-                <p class="invalid-feedback">This Feild is Required & should be a Vaild Email</p>
-
-              </div>
+            <div class="form-group">
+              <label for="author_email">Your email *</label>
+              <input
+                class="form-control"
+                name="author_email"
+                placeholder="Write your email here"
+                type="email"
+                required
+              />
+              <p class="invalid-feedback">This Feild is Required & should be a Vaild Email</p>
+  
+            </div>
+            <div class="form-group">
+              <button class="btn btn-primary btn-block">Login</button>
             </div>
           </div>
+        </div>
+      </form>
+      </div>
+      <div class="app-content d-none">
+      
+      <div class="formContainer my-5">
+        <form id="formVedioRequest" novalidate>
           <hr />
           <div class="row">
             <div class="col-md">
@@ -120,8 +127,8 @@
         <input type="search" class="form-control" placeholder="Search....." id="searchBox">
       </div>
       </div>
-     
       <div id="listOfRequests"></div>
+       </div>
     </div>
     <script src="./client.js"></script>
   </body>

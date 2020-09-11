@@ -72,7 +72,6 @@ app.put("/video-request/vote", async (req, res, next) => {
 
 app.put("/video-request", async (req, res, next) => {
   const { id, status, resVideo } = req.body;
-
   const response = await VideoRequestData.updateRequest(id, status, resVideo);
   res.send(response);
   next();

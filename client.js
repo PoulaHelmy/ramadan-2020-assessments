@@ -1,6 +1,9 @@
 const listOfVidsElm = document.getElementById("listOfRequests");
-let sortBy = "newFirst";
-let searchTerm = "";
+const state = {
+  sortBy: "newFirst",
+  searchTerm: "",
+  userId: "",
+};
 function renderGetSingleVidReq(vidInfo, isPrePend = false) {
   const vidReqContainerElm = document.createElement("div");
   vidReqContainerElm.innerHTML = `
@@ -26,7 +29,7 @@ function renderGetSingleVidReq(vidInfo, isPrePend = false) {
             <div class="card-footer d-flex flex-row justify-content-between">
                 <div>
                 <span class="text-info">${vidInfo.status.toUpperCase()}</span>
-                &bullet; added by <strong>${vidInfo.author_name}</strong> on
+                &bul; added by <strong>${vidInfo.author_name}</strong> on
                 <strong>${new Date(
                   vidInfo.submit_date
                 ).toLocaleDateString()}</strong>
@@ -104,18 +107,18 @@ function debounce(fn, time) {
   };
 } //end of debounce
 function checkValidty(formData) {
-  const name = formData.get("author_name");
-  const email = formData.get("author_email");
+  // const name = formData.get("author_name");
+  // const email = formData.get("author_email");
   const topic = formData.get("topic_title");
   const topic_details = formData.get("topic_details");
 
-  if (!name) {
-    document.querySelector("[name=author_name]").classList.add("is-invalid");
-  }
-  const emailPattern = /^[a-zA-Z0-9\.]+@[a-zA-Z0-9]+(\-)?[a-zA-Z0-9]+(\.)?[a-zA-Z0-9]{2,6}?\.[a-zA-Z]{2,6}$/;
-  if (!email || !emailPattern.test(email)) {
-    document.querySelector("[name=author_email]").classList.add("is-invalid");
-  }
+  // if (!name) {
+  //   document.querySelector("[name=author_name]").classList.add("is-invalid");
+  // }
+  // const emailPattern = /^[a-zA-Z0-9\.]+@[a-zA-Z0-9]+(\-)?[a-zA-Z0-9]+(\.)?[a-zA-Z0-9]{2,6}?\.[a-zA-Z]{2,6}$/;
+  // if (!email || !emailPattern.test(email)) {
+  //   document.querySelector("[name=author_email]").classList.add("is-invalid");
+  // }
   if (!topic || topic.length > 30) {
     document.querySelector("[name=topic_title]").classList.add("is-invalid");
   }
@@ -133,18 +136,27 @@ function checkValidty(formData) {
   }
   return true;
 } //end of checkValidty
+
 document.addEventListener("DOMContentLoaded", function () {
   const formVidReqElm = document.getElementById("formVedioRequest");
   const sortByElms = document.querySelectorAll("[id*=sort_by_]");
   const searchBox = document.getElementById("searchBox");
+  const formLoginElm = document.querySelector(".login-form");
+  const appContentElm = document.querySelector(".app-content");
+
+  if (window.location.search) {
+    state.userId = new URLSearchParams(window.location.search).get("id");
+    formLoginElm.classList.add("d-none");
+    appContentElm.classList.remove("d-none");
+  }
   loadAllVidReqs();
   sortByElms.forEach((elm) => {
     elm.addEventListener("click", function (e) {
       e.preventDefault();
-      sortBy = this.querySelector("input").value;
-      loadAllVidReqs(sortBy, searchTerm);
+      state.sortBy = this.querySelector("input").value;
+      loadAllVidReqs(state.sortBy, state.searchTerm);
       this.classList.add("active");
-      if (sortBy === "topVotedFirst") {
+      if (state.sortBy === "topVotedFirst") {
         document.getElementById("sort_by_new").classList.remove("active");
       } else {
         document.getElementById("sort_by_top").classList.remove("active");
@@ -154,13 +166,14 @@ document.addEventListener("DOMContentLoaded", function () {
   searchBox.addEventListener(
     "input",
     debounce((e) => {
-      searchTerm = e.target.value;
-      loadAllVidReqs(sortBy, searchTerm);
+      state.searchTerm = e.target.value;
+      loadAllVidReqs(state.sortBy, state.searchTerm);
     }, 300)
   ); //end of search box
   formVidReqElm.addEventListener("submit", (e) => {
     e.preventDefault();
     const formData = new FormData(formVidReqElm);
+    formData.append("author_id", state.userId);
     const isValid = checkValidty(formData);
     if (!isValid) return;
 
