@@ -1,19 +1,13 @@
 import { renderGetSingleVidReq } from "./renderGetSingleVidReq.js";
 import { state } from "./client.js";
+import api from "./api.js";
+import { applyVoteStyle } from "./applyVoteStyle.js";
 export default {
   ///////////////////////////////////////////////////////////
   updateVideoStatus: (videoId, newStatus, videoResValue = "") => {
-    fetch("http://localhost:7777/video-request", {
-      method: "PUT",
-      headers: { "content-Type": "application/json" },
-      body: JSON.stringify({
-        id: videoId,
-        status: newStatus,
-        resVideo: videoResValue,
-      }),
-    })
-      .then((res) => res.json())
-      .then(() => window.location.reload());
+    return api.videoReq
+      .update(videoId, newStatus, (videoResValue = ""))
+      .then((_) => window.location.reload());
   }, //end of Update VideoStatus,
   ///////////////////////////////////////////////////////////
   loadAllVidReqs: (
@@ -23,15 +17,26 @@ export default {
     locaState = state
   ) => {
     const listOfVidsElm = document.getElementById("listOfRequests");
-    fetch(
-      `http://localhost:7777/video-request?sortBy=${sortBy}&searchTerm=${searchTerm}&filterBy=${filterBy}`
-    )
-      .then((blobb) => blobb.json())
-      .then((data) => {
-        listOfVidsElm.innerHTML = "";
-        data.forEach((vidInfo) => {
-          renderGetSingleVidReq(vidInfo, locaState);
-        }); //end of foreach
-      }); //end of then
+    api.videoReq.get(sortBy, searchTerm, filterBy).then((data) => {
+      listOfVidsElm.innerHTML = "";
+      data.forEach((vidInfo) => {
+        renderGetSingleVidReq(vidInfo, locaState);
+      }); //end of foreach
+    }); //end of then
   }, //end of loadAllVidReqs
+  ///////////////////////////////////////////////////////////
+  addVideoReq(formData) {
+    return api.videoReq.post(formData);
+  }, //end of addVideoReq
+  ///////////////////////////////////////////////////////////
+  deleteVideoReq(id) {
+    return api.videoReq.delete(id).then(() => window.location.reload());
+  }, //end of deleteVideoReq
+  updateVotes: (id, vote_type, user_id, isDone, state) => {
+    const scoreVotesElm = document.getElementById(`score_votes_${id}`);
+    return api.votes.update(id, vote_type, user_id).then((data) => {
+      scoreVotesElm.innerText = data.votes.ups.length - data.votes.downs.length;
+      applyVoteStyle(id, data.votes, isDone, state, vote_type);
+    });
+  },
 }; //end of API;

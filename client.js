@@ -2,7 +2,7 @@ import { debounce } from "./debounce.js";
 import { renderGetSingleVidReq } from "./renderGetSingleVidReq.js";
 import { checkValidty } from "./checkValidty.js";
 import dataService from "./dataService.js";
-
+import api from "./api.js";
 const SUPER_USER_ID = "15091997";
 export const state = {
   sortBy: "newFirst",
@@ -81,14 +81,8 @@ document.addEventListener("DOMContentLoaded", function () {
     formData.append("author_id", state.userId);
     const isValid = checkValidty(formData);
     if (!isValid) return;
-
-    fetch("http://localhost:7777/video-request", {
-      method: "POST",
-      body: formData,
-    })
-      .then((bblob) => bblob.json())
-      .then((result) => {
-        renderGetSingleVidReq(result, state, true);
-      });
+    dataService.addVideoReq(formData).then((result) => {
+      renderGetSingleVidReq(result, state, true);
+    });
   }); //end of form submit
 }); //end of DOMContentLoaded
